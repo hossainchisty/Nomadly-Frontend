@@ -83,61 +83,66 @@ const PropertyDetail = () => {
     );
   }
 
-  // Transform property data to match the UI structure
-  const propertyData = {
-    id: property.id,
-    title: property.property_name,
-    location: `${property.city?.name || ''}, ${property.country?.name || ''}`,
-    price: parseFloat(property.monthly_rent),
-    service_fee: parseFloat(property.monthly_rent) * 0.01, // 1% service fee
-    images: property.interior_images?.map((img: any) => img.image) || [
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200",
-    ],
-    orcaScore: Math.min(100, Math.floor(property.view_count / 10000)), // Mock score based on views
-    rating: 4.5, // Would come from reviews API
-    reviewCount: property.view_count > 1000000 ? Math.floor(property.view_count / 10000) : property.view_count, // Mock review count
-    capacity: property.max_guests || 2,
-    bedrooms: property.bedrooms?.replace("_bedroom", "") || "1",
-    bathrooms: property.bathrooms?.replace("_bathroom", "") || "1",
-    description: property.description,
+
+  const propertyData: {
+    id: any;
+    title: any;
+    location: string;
+    price: number;
+    service_fee: number;
+    images: any[];
+    orcaScore: number;
+    reviewCount: number;
+    rating: number;
+    capacity: any;
+    bedrooms: any;
+    bathrooms: any;
+    description: any;
+    amenities: { icon: any; label: string }[];
+    host: { name: any; avatar: any; responseRate: number; responseTime: string; verified: any };
+    review: { author: any; avatar: any; rating: number; date: string; comment: any }[];
+  } = {
+    id: property?.id || null,
+    title: property?.property_name || "",
+    location: `${property?.city?.name || ''}, ${property?.country?.name || ''}`,
+    price: parseFloat(property?.monthly_rent) || 0,
+    service_fee: parseFloat(property?.monthly_rent) * 0.01 || 0, // 1% service fee
+    images: property?.interior_images?.map((img: any) => img.image),
+    orcaScore: Math.min(100, Math.floor(property?.view_count / 10000)) || 0,
+    reviewCount: property?.review?.length || 0,
+    rating: (property?.review && property.review.length > 0)
+      ? property.review.reduce((acc: number, review: any) => acc + review.rating, 0) / property.review.length
+      : 0,
+    capacity: property?.max_guests || 2,
+    bedrooms: property?.bedrooms?.replace("_bedroom", "") || "1",
+    bathrooms: property?.bathrooms?.replace("_bathroom", "") || "1",
+    description: property?.description || "",
     amenities: [
       { icon: Wifi, label: "High-Speed WiFi" },
       { icon: Home, label: "Dedicated Workspace" },
       { icon: Coffee, label: "Coffee Machine" },
       { icon: Wind, label: "Air Conditioning" },
       { icon: Tv, label: "Smart TV" },
-      { icon: Users, label: `Up to ${property.max_guests || 2} Guests` },
+      { icon: Users, label: `Up to ${property?.max_guests || 2} Guests` },
     ],
     host: {
-      name: property.listed_by?.full_name,
-      avatar: property.listed_by?.profile_picture,
-      responseRate: 95, // Would come from user stats
-      responseTime: "Within 2 hours", // Would come from user stats
-      verified: property.listed_by?.is_verified,
+      name: property?.listed_by?.full_name || "",
+      avatar: property?.listed_by?.profile_picture || "",
+      responseRate: 95,
+      responseTime: "Within 2 hours",
+      verified: property?.listed_by?.is_verified || false,
     },
-    reviews: [
-      {
-        author: "John Smith",
-        rating: 5,
-        date: "2 weeks ago",
-        comment: "Absolutely perfect for remote work! The WiFi is lightning fast and the workspace setup is excellent.",
-      },
-      {
-        author: "Sarah Chen",
-        rating: 5,
-        date: "1 month ago",
-        comment: "Great location and the apartment matches the photos perfectly. Maria was very responsive and helpful.",
-      },
-      {
-        author: "Alex Johnson",
-        rating: 4,
-        date: "2 months ago",
-        comment: "Lovely space with everything you need. The neighborhood is vibrant and safe.",
-      },
-    ],
+    review: property?.review?.map((review: any) => ({
+      author: review.user?.full_name || "Anonymous User",
+      avatar: review.user?.profile_picture || "",
+      rating: review.rating || 0,
+      date: new Date(review.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }) || "Unknown Date",
+      comment: review.comment || "",
+    })) || [],
   };
 
   return (
@@ -278,26 +283,45 @@ const PropertyDetail = () => {
               {/* Reviews */}
               <div>
                 <h2 className="text-2xl font-semibold mb-6">Guest Reviews</h2>
-                <div className="space-y-6">
-                  {propertyData.reviews.map((review, index) => (
-                    <Card key={index} className="bg-gradient-card shadow-soft">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h4 className="font-semibold">{review.author}</h4>
-                            <p className="text-sm text-muted-foreground">{review.date}</p>
+                {propertyData.review.length > 0 ? (
+                  <div className="space-y-6">
+                    {propertyData.review.map((review: any, index: number) => (
+                      <Card key={index} className="bg-gradient-card shadow-soft">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              {review.avatar ? (
+                                <img
+                                  src={review.avatar}
+                                  alt={review.author}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                                  <span className="text-white font-semibold">
+                                    {review.author?.charAt(0)?.toUpperCase() || 'U'}
+                                  </span>
+                                </div>
+                              )}
+                              <div>
+                                <h4 className="font-semibold">{review.author}</h4>
+                                <p className="text-sm text-muted-foreground">{review.date}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: review.rating }).map((_, i) => (
+                                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              ))}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: review.rating }).map((_, i) => (
-                              <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-muted-foreground">{review.comment}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                          <p className="text-muted-foreground">{review.comment}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">No reviews yet. Be the first to review this property!</p>
+                )}
               </div>
             </div>
 
