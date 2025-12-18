@@ -22,7 +22,7 @@ const Navigation = () => {
     return "User";
   };
 
-  
+
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -101,30 +101,7 @@ const Navigation = () => {
                     </div>
                   </Link>
                 </div>
-              ) : (
-                // Fallback: if we can't determine the role, show a generic button
-                <div className="flex items-center gap-2">
-                  <Link to="/profile">
-                    <Button variant="ghost" size="sm">
-                      Account
-                    </Button>
-                  </Link>
-                  <Link to="/profile" className="flex items-center gap-2 hover:bg-secondary rounded-lg px-2 py-1 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-gradient-hero flex items-center justify-center">
-                      {user?.profile_picture ? (
-                        <img
-                          src={user.profile_picture}
-                          alt={getUserDisplayName()}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 text-primary-foreground" />
-                      )}
-                    </div>
-                  </Link>
-                </div>
-              )
-            ) : (
+              ) : null) : (
               <>
                 <Link to="/auth">
                   <Button size="sm" className="bg-gradient-hero shadow-soft hover:shadow-glow transition-all">
